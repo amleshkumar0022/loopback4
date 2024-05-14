@@ -49,12 +49,14 @@
     "!*/__tests__"
   ],
   "dependencies": {
+    "@loopback/authentication": "^11.0.1",
     "@loopback/boot": "^7.0.1",
     "@loopback/core": "^6.0.1",
     "@loopback/repository": "^7.0.1",
     "@loopback/rest": "^14.0.1",
     "@loopback/rest-explorer": "^7.0.1",
     "@loopback/service-proxy": "^7.0.1",
+    "crypto": "^1.0.1",
     "json": "^11.0.0",
     "jsonwebtoken": "^9.0.2",
     "loopback-connector-postgresql": "^7.1.0",

@@ -48,6 +48,10 @@ const config = {
       template: {
         method: 'POST',
         url: `https://gatewayapi.smallcase.com/gateway/${GatewayName}/transaction`,
+        
+        headers:{
+          'X-sp-requestId':"{requestId}"
+        },
         body: {
           "intent": "TRANSACTION",
           "orderConfig": {
@@ -65,14 +69,18 @@ const config = {
 
 
       functions: {
-        fetchData: ["ticker","quantity","type"],
+        fetchData: ["ticker","quantity","type","requestId"],
       },
+      
       responseHandler: {
-        postTransaction: (response: any) => {
+        
+        postTransaction: (request: any) => {
           // Handle the API response here
-          console.log('API Response:', response);
+          console.log('API Response:', request);
+          console.log("got the request")
           // You can return or process the response further as needed
-          return response;
+          return request;
+          console.log("third party api")
         },
       },
     },
