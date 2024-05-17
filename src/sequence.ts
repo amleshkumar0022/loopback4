@@ -88,13 +88,16 @@ export class MySequence extends MiddlewareSequence {
     context.request.headers['timestamp']=timestamp;
     const jwt=createAuthToken(payload);
     context.request.headers['authToken']=jwt;
+    // const tickerrr=context.request.query["ticker"];
+    // context.request.body["ticker"]=tickerrr;
+    
 
-    console.log(`Meathod "${context.request.method}" URL: "${context.request.url}" headers: "${JSON.stringify(context.request.headers)}"`)
-    console.log(context.response.header)
-    console.log(context.response.statusCode)
+    console.log(`Meathod "${context.request.method}" URL: "${context.request.url}" headers: "${JSON.stringify(context.request.headers)}" Body${context.request.body}`)
+    // console.log(context.response.json)
+    // console.log(context.request)
     
         // console.log("headers updated:"+JSON.stringify(context.request.headers))
-    console.log("going for third party")
+        // console.log("body: "+JSON.parse(JSON.stringify(context.request.body)))
   }
 
 

@@ -1,18 +1,15 @@
 import { inject, lifeCycleObserver, LifeCycleObserver } from '@loopback/core';
-import { juggler, Null } from '@loopback/repository';
-import { v4 as uuidv4 } from 'uuid'
-import jwt from 'jsonwebtoken'
+import { juggler } from '@loopback/repository';
+import { v4 as uuidv4 } from 'uuid';
+import jwt from 'jsonwebtoken';
 
-const url = 'https://gatewayapi.smallcase.com/gateway'
+const url = 'https://gatewayapi.smallcase.com/gateway';
 const GatewayName = "plan360degree";
 const secrett = "plan360degree_b769953d42804f03874ad9339a4a496f";
 const API_secret = "plan360degree_fdc1222d6a90457287aa43cfa9c0c03a";
 
 const authId = uuidv4();
-console.log(authId)
-
-
-
+console.log("Auth ID:", authId);
 
 function createAuthToken(id: any) {
   const secret = secrett;
@@ -27,8 +24,8 @@ function createAuthToken(id: any) {
   }, secret, { expiresIn });
 }
 const jwwt = createAuthToken(null);
-console.log(jwwt)
-console.log(API_secret)
+console.log("JWT:", jwwt);
+console.log("API Secret:", API_secret);
 
 const config = {
   name: 'transactionapi',
@@ -38,9 +35,9 @@ const config = {
   options: {
     headers: {
       accept: 'application/json',
+      'content-type': 'application/json',
       'x-gateway-secret': API_secret,
       'x-gateway-authtoken': jwwt.toString(),
-
     },
   },
   operations: [
@@ -48,10 +45,6 @@ const config = {
       template: {
         method: 'POST',
         url: `https://gatewayapi.smallcase.com/gateway/${GatewayName}/transaction`,
-        
-        headers:{
-          'X-sp-requestId':"{requestId}"
-        },
         body: {
           "intent": "TRANSACTION",
           "orderConfig": {
@@ -66,34 +59,25 @@ const config = {
           }
         }
       },
-
-
       functions: {
-        fetchData: ["ticker","quantity","type","requestId"],
+        fetchData: ["ticker", "quantity", "type"]
       },
-      
-      responseHandler: {
-        
-        postTransaction: (request: any) => {
-          // Handle the API response here
-          console.log('API Response:', request);
-          console.log("got the request")
-          // You can return or process the response further as needed
-          return request;
-          console.log("third party api")
-        },
+      requestInterceptor: (request: any, context: any) => {
+        console.log("Inside Request Interceptor");
+        console.log("Request:", JSON.stringify(request, null, 2));
+        return request;
+      },
+      responseInterceptor: (response: any, context: any) => {
+        console.log("Inside Response Interceptor");
+        console.log("Response:", JSON.stringify(response, null, 2));
+        return response;
       },
     },
   ],
 };
 
-// Observe application's life cycle to disconnect the datasource when
-// application is stopped. This allows the application to be shut down
-// gracefully. The `stop()` method is inherited from `juggler.DataSource`.
-// Learn more at https://loopback.io/doc/en/lb4/Life-cycle.html
 @lifeCycleObserver('datasource')
-export class TransactionapiDataSource extends juggler.DataSource
-  implements LifeCycleObserver {
+export class TransactionapiDataSource extends juggler.DataSource implements LifeCycleObserver {
   static dataSourceName = 'transactionapi';
   static readonly defaultConfig = config;
 

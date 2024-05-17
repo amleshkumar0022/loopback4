@@ -3,7 +3,7 @@
 import { inject } from '@loopback/core';
 import { Smallcaseapiservice } from '../services';
 import {intercept} from '@loopback/core';
-import { RawBodyParser, Request, ResponseObject, RestBindings, get, param, requestBody, response } from '@loopback/rest'
+import { RawBodyParser, Request, ResponseObject, RestBindings, get, param, post, requestBody, response } from '@loopback/rest'
 import { repository } from '@loopback/repository';
 import { RequestInfoRepository } from '../repositories/request-info.repository';
 import { RequestInfo } from '../models';
@@ -15,19 +15,23 @@ export class CallapiController {
     protected smallcaseService: Smallcaseapiservice,
     @repository(RequestInfoRepository) private requestInfoRepo: RequestInfoRepository
   ) { }
-  @get(`callsmallcaseapi/{ticker}/{quantity}/{type}`)
+  @post(`transaction/{ticker}/{quantity}/{type}`)
   async getData(
-    @param.path.string('ticker') ticker: string,
-    @param.path.string('quantity') quantity: number,
-    @param.path.string('type') type: string,
+    @param.query.string('ticker') ticker: string,
+    @param.query.string('quantity') quantity: number,
+    @param.query.string('type') type: string,
     @inject(RestBindings.Http.REQUEST) request: Request,
+    @requestBody() requestBody:{ticker:string,quantity:number,type:string}
    
   ): Promise<object> {
     try {
       // console.log("trying ticker is  "+  ticker + " quantity is  "+quantity + "   type is "+type)
-      const response = await this.smallcaseService.fetchData(ticker,quantity,type,request.headers["x-sp-request-id"] as string);
+      const response = await this.smallcaseService.fetchData(ticker,quantity,type);
       console.log("got data   response is   "+JSON.stringify(response))
+      console.log("RequestBody "+JSON.stringify(request.query));
+      
       // console.log("Response body " + JSON.stringify(response));
+
       
       // console.log("transactioid:"+response.data["transactionId"])
       const requestId=String(request.headers["x-sp-request-id"]);
