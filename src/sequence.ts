@@ -19,49 +19,59 @@ import { Null } from '@loopback/repository';
 
 
 // Function to generate a secure random key
-function generateSecretKey(): string {
-  // Generate a random buffer
-  const buffer = crypto.randomBytes(32); // You can adjust the byte length based on your security needs
+// function generateSecretKey(): string {
+//   // Generate a random buffer
+//   const buffer = crypto.randomBytes(32); // You can adjust the byte length based on your security needs
 
-  // Convert the buffer to a hexadecimal string
-  const secretKey = buffer.toString('hex');
+//   // Convert the buffer to a hexadecimal string
+//   const secretKey = buffer.toString('hex');
 
-  return secretKey;
-}
-const secretKey=generateSecretKey();
+//   return secretKey;
+// }
+// const secretKey=generateSecretKey();
 
 
-const payload='SpringMoney@123'
-// Function to create an authentication token given an ID
-function createAuthToken(username: string): string {
-  // Define your secret key for signing the token
-  const secret = secretKey;
+// const payload='SpringMoney@123'
+// // Function to create an authentication token given an ID
+// function createAuthToken(username: string): string {
+//   // Define your secret key for signing the token
+//   const secret = secretKey;
 
-  // Define token payload
-  const payload = {
+//   // Define token payload
+//   const payload = {
     
-    // You can add more data to the payload if needed
-  };
+//     // You can add more data to the payload if needed
+//   };
 
-  // Define token expiration (optional)
-  const expiresIn = '1d'; // Token will expire in 1 day
+//   // Define token expiration (optional)
+//   const expiresIn = '1d'; // Token will expire in 1 day
 
-  // Generate and return the token
-  return jwt.sign(payload, secret, { expiresIn });
-}
+//   // Generate and return the token
+//   return jwt.sign(payload, secret, { expiresIn });
+// }
 
 
 
-export class MySequence extends MiddlewareSequence {
+export class MySequence extends MiddlewareSequence { 
   
   async handle(context: RequestContext) {
     try {
+
+      
+        // Check if the request path matches the route that requires authentication
+        if (context.request.path === '/transaction') {
+          // Call the authentication middleware only for the protected route
+          await this.Authentication(context);
+        }
       // Add your logging middleware logic here
     //   console.log("headers: "+JSON.stringify(context.request.headers))
       console.log("body: "+JSON.stringify(context.request.body))
     //   console.log(`[${new Date().toISOString()}] ${context.request.method} ${context.request.path}`);
       //calling my wrapReq middleware
+
+
       await this.wrapReq(context);
+      
 
       await this.wrapAPIreq(context);
       
@@ -78,6 +88,22 @@ export class MySequence extends MiddlewareSequence {
       throw err;
     }
   }
+  
+  async Authentication(context: RequestContext) {
+    const request = context.request;
+
+    // Your authentication middleware logic goes here
+    // For example, check for presence of authentication token in headers
+    const authToken = request.headers['authentication'];
+
+    if (!authToken) {
+      throw new Error('Authentication Token is missing');
+    }
+
+    // Optionally, you can validate the token or perform other authentication checks
+    // For simplicity, let's assume the presence of a token is sufficient for authentication
+    console.log('Authentication successful');
+  }
 
 
 
@@ -86,8 +112,8 @@ export class MySequence extends MiddlewareSequence {
     context.request.headers['x-sp-request-id']=request_id
     const timestamp=new Date().toLocaleString();
     context.request.headers['timestamp']=timestamp;
-    const jwt=createAuthToken(payload);
-    context.request.headers['authToken']=jwt;
+    // const jwt=createAuthToken(payload);
+    // context.request.headers['authToken']=jwt;
     // const tickerrr=context.request.query["ticker"];
     // context.request.body["ticker"]=tickerrr;
     
@@ -101,11 +127,11 @@ export class MySequence extends MiddlewareSequence {
   }
 
 
-  async Authentication(context:RequestContext){
-    const authheader=context.request.headers['authToken'];
+  // async Authentication(context:RequestContext){
+  //   const authheader=context.request.headers['authToken'];
     
 
-  }
+  // }
    
   async  wrapAPIreq(context: RequestContext) {
     console.log("almost there");

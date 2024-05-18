@@ -9,6 +9,7 @@ import {RestApplication} from '@loopback/rest';
 import {ServiceMixin} from '@loopback/service-proxy';
 import path from 'path';
 import {MySequence} from './sequence';
+import { JWTservice } from './services/jwt.service';
 
 export {ApplicationConfig};
 
@@ -17,7 +18,8 @@ export class SmallcaseApplication extends BootMixin(
 ) {
   constructor(options: ApplicationConfig = {}) {
     super(options);
-
+    
+    this.bind('services.jwt.service').toClass(JWTservice);
     // Set up the custom sequence
     this.sequence(MySequence);
 
@@ -40,5 +42,8 @@ export class SmallcaseApplication extends BootMixin(
         nested: true,
       },
     };
+  }
+  setupBindings(): void {
+    // this.bind('services.jwt.service').toClass(JWTservice)
   }
 }

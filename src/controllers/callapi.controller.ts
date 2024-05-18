@@ -3,19 +3,30 @@
 import { inject } from '@loopback/core';
 import { Smallcaseapiservice } from '../services';
 import {intercept} from '@loopback/core';
-import { RawBodyParser, Request, ResponseObject, RestBindings, get, param, post, requestBody, response } from '@loopback/rest'
+import { HttpErrors, RawBodyParser, Request, ResponseObject, RestBindings, get, param, post, requestBody, response } from '@loopback/rest'
 import { repository } from '@loopback/repository';
 import { RequestInfoRepository } from '../repositories/request-info.repository';
 import { RequestInfo } from '../models';
+import { JWTservice } from '../services/jwt.service';
+import { authenticate } from '@loopback/authentication';
 
 
 export class CallapiController {
   constructor(
     @inject('services.Smallcaseapiservice')
     protected smallcaseService: Smallcaseapiservice,
+    @inject('services.jwt.service') public jwtservice: JWTservice,
     @repository(RequestInfoRepository) private requestInfoRepo: RequestInfoRepository
   ) { }
-  @post(`transaction/{ticker}/{quantity}/{type}`)
+  @post('genToken')
+  async credential(){
+    const token=await this.jwtservice.generateToken('Spring@123')
+    return token
+  }
+ 
+  @post(`transaction`)
+
+
   async getData(
     @param.query.string('ticker') ticker: string,
     @param.query.string('quantity') quantity: number,
@@ -24,8 +35,10 @@ export class CallapiController {
     @requestBody() requestBody:{ticker:string,quantity:number,type:string}
    
   ): Promise<object> {
+    
     try {
       // console.log("trying ticker is  "+  ticker + " quantity is  "+quantity + "   type is "+type)
+      
       const response = await this.smallcaseService.fetchData(ticker,quantity,type);
       console.log("got data   response is   "+JSON.stringify(response))
       console.log("RequestBody "+JSON.stringify(request.query));
@@ -38,6 +51,8 @@ export class CallapiController {
       const timestamp=String(request.headers["timestamp"]);
       const transactionId=JSON.stringify(response.data["transactionId"]);
       const expireAt=response.data["expireAt"];
+      
+      
       
       console.log("requestId: "+requestId);
       console.log("time: "+timestamp);
