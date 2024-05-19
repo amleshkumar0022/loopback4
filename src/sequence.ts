@@ -12,6 +12,7 @@ import {
 } from '@loopback/authentication';
 import { inject } from '@loopback/core';
 import { Null } from '@loopback/repository';
+// import { JWTservice } from './services/jwt.service';
 
 
 
@@ -31,29 +32,33 @@ import { Null } from '@loopback/repository';
 // const secretKey=generateSecretKey();
 
 
-// const payload='SpringMoney@123'
-// // Function to create an authentication token given an ID
-// function createAuthToken(username: string): string {
-//   // Define your secret key for signing the token
-//   const secret = secretKey;
+const name='SpringMoney@123'
+const secrett = 'anceeef342';
 
-//   // Define token payload
-//   const payload = {
-    
-//     // You can add more data to the payload if needed
-//   };
+// Function to create an authentication token given an ID
+function createAuthToken(username: string): string {
+  // Define your secret key for signing the token
+  const secret = secrett;
 
-//   // Define token expiration (optional)
-//   const expiresIn = '1d'; // Token will expire in 1 day
+  // Define token payload
+  const payload = {
+    name:name
+    // You can add more data to the payload if needed
+  };
 
-//   // Generate and return the token
-//   return jwt.sign(payload, secret, { expiresIn });
-// }
+  // Define token expiration (optional)
+  const expiresIn = '1d'; // Token will expire in 1 day
+
+  // Generate and return the token
+  return jwt.sign(payload, secret, { expiresIn });
+}
+const auth_token=createAuthToken(name);
+console.log("auth_token: "+auth_token);
 
 
 
 export class MySequence extends MiddlewareSequence { 
-  
+
   async handle(context: RequestContext) {
     try {
 
@@ -94,15 +99,33 @@ export class MySequence extends MiddlewareSequence {
 
     // Your authentication middleware logic goes here
     // For example, check for presence of authentication token in headers
-    const authToken = request.headers['authentication'];
+    let authToken = request.headers['authentication'];
 
     if (!authToken) {
       throw new Error('Authentication Token is missing');
     }
+    if (Array.isArray(authToken)) {
+      authToken = authToken[0];
+    }
+
+    try {
+      // Verify and decode the token
+      const decoded = jwt.verify(authToken, secrett);
+      
+      // Attach the decoded payload to the context object for further use
+      context.bind('user').to(decoded);
+      console.log('Authentication successful:', decoded);
+      
+    } catch (error) {
+      // Handle token verification errors
+      throw new Error('Invalid or expired token');
+    }
+    
+    
 
     // Optionally, you can validate the token or perform other authentication checks
     // For simplicity, let's assume the presence of a token is sufficient for authentication
-    console.log('Authentication successful');
+    // console.log('Authentication successful');
   }
 
 
@@ -112,13 +135,14 @@ export class MySequence extends MiddlewareSequence {
     context.request.headers['x-sp-request-id']=request_id
     const timestamp=new Date().toLocaleString();
     context.request.headers['timestamp']=timestamp;
+    
     // const jwt=createAuthToken(payload);
-    // context.request.headers['authToken']=jwt;
+    // context.request.headers['authToken']=jwt
     // const tickerrr=context.request.query["ticker"];
     // context.request.body["ticker"]=tickerrr;
     
 
-    console.log(`Meathod "${context.request.method}" URL: "${context.request.url}" headers: "${JSON.stringify(context.request.headers)}" Body${context.request.body}`)
+    console.log(`Meathod "${context.request.method}" URL: "${context.request.url}" headers: "${JSON.stringify(context.request.headers)}"`)
     // console.log(context.response.json)
     // console.log(context.request)
     

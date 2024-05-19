@@ -60,7 +60,7 @@ const config = {
         }
       },
       functions: {
-        fetchData: ["ticker", "quantity", "type"]
+        fetchData: []
       },
       requestInterceptor: (request: any, context: any) => {
         console.log("Inside Request Interceptor");

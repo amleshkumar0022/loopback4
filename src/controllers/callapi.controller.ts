@@ -7,41 +7,63 @@ import { HttpErrors, RawBodyParser, Request, ResponseObject, RestBindings, get, 
 import { repository } from '@loopback/repository';
 import { RequestInfoRepository } from '../repositories/request-info.repository';
 import { RequestInfo } from '../models';
-import { JWTservice } from '../services/jwt.service';
+// import { JWTservice } from '../services/jwt.service';
 import { authenticate } from '@loopback/authentication';
+import { TransactionapiDataSource } from '../datasources';
+
 
 
 export class CallapiController {
   constructor(
+
     @inject('services.Smallcaseapiservice')
     protected smallcaseService: Smallcaseapiservice,
-    @inject('services.jwt.service') public jwtservice: JWTservice,
-    @repository(RequestInfoRepository) private requestInfoRepo: RequestInfoRepository
+    // @inject('services.jwt.service') public jwtservice: JWTservice,
+    
+    @repository(RequestInfoRepository) public requestInfoRepo: RequestInfoRepository
   ) { }
-  @post('genToken')
-  async credential(){
-    const token=await this.jwtservice.generateToken('Spring@123')
-    return token
-  }
+  // @post('genToken')
+  // async credential(){
+  //   // const token=await this.jwtservice.generateToken('Spring@123')
+  //   // return token
+  // }
  
   @post(`transaction`)
 
 
   async getData(
-    @param.query.string('ticker') ticker: string,
-    @param.query.string('quantity') quantity: number,
-    @param.query.string('type') type: string,
+
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              ticker: {type: 'string'},
+              quantity: {type: 'number'},
+              type: {type: 'string'},
+            },
+            required: ['ticker', 'quantity', 'type'],
+          },
+        },
+      },
+    })
+    // @param.query.string('ticker') ticker: string,
+    // @param.query.string('quantity') quantity: number,
+    // @param.query.string('type') type: string,
     @inject(RestBindings.Http.REQUEST) request: Request,
-    @requestBody() requestBody:{ticker:string,quantity:number,type:string}
+
+    
    
   ): Promise<object> {
     
     try {
       // console.log("trying ticker is  "+  ticker + " quantity is  "+quantity + "   type is "+type)
       
-      const response = await this.smallcaseService.fetchData(ticker,quantity,type);
+      const response = await this.smallcaseService.fetchData();
       console.log("got data   response is   "+JSON.stringify(response))
-      console.log("RequestBody "+JSON.stringify(request.query));
+      console.log(response.timestamp)
+      console.log("RequestBody "+JSON.stringify(request.body));
       
       // console.log("Response body " + JSON.stringify(response));
 
