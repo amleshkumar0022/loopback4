@@ -1,5 +1,6 @@
-import {MiddlewareSequence, Request, RequestContext, Response} from '@loopback/rest';
+import { MiddlewareSequence, Request, RequestContext, Response } from '@loopback/rest';
 import { time } from 'console';
+import moment from 'moment'
 import { request } from 'http';
 import { v4 as uuidv4 } from 'uuid';
 import crypto, { verify } from 'crypto';
@@ -32,7 +33,7 @@ import { Null } from '@loopback/repository';
 // const secretKey=generateSecretKey();
 
 
-const name='SpringMoney@123'
+const name = 'SpringMoney@123'
 const secrett = 'anceeef342';
 
 // Function to create an authentication token given an ID
@@ -42,7 +43,7 @@ function createAuthToken(username: string): string {
 
   // Define token payload
   const payload = {
-    name:name
+    name: name
     // You can add more data to the payload if needed
   };
 
@@ -52,39 +53,39 @@ function createAuthToken(username: string): string {
   // Generate and return the token
   return jwt.sign(payload, secret, { expiresIn });
 }
-const auth_token=createAuthToken(name);
-console.log("auth_token: "+auth_token);
+const auth_token = createAuthToken(name);
+console.log("auth_token: " + auth_token);
 
 
 
-export class MySequence extends MiddlewareSequence { 
+export class MySequence extends MiddlewareSequence {
 
   async handle(context: RequestContext) {
     try {
 
-      
-        // Check if the request path matches the route that requires authentication
-        if (context.request.path === '/transaction') {
-          // Call the authentication middleware only for the protected route
-          await this.Authentication(context);
-        }
+
+      // Check if the request path matches the route that requires authentication
+      if (context.request.path === '/transaction') {
+        // Call the authentication middleware only for the protected route
+        await this.Authentication(context);
+      }
       // Add your logging middleware logic here
-    //   console.log("headers: "+JSON.stringify(context.request.headers))
-      console.log("body: "+JSON.stringify(context.request.body))
-    //   console.log(`[${new Date().toISOString()}] ${context.request.method} ${context.request.path}`);
+      //   console.log("headers: "+JSON.stringify(context.request.headers))
+      console.log("body: " + JSON.stringify(context.request.body))
+      //   console.log(`[${new Date().toISOString()}] ${context.request.method} ${context.request.path}`);
       //calling my wrapReq middleware
 
 
-      await this.wrapReq(context);
-      
+      await this.wrapReq(context)
+
 
       await this.wrapAPIreq(context);
-      
+
       // Call the super method to continue the sequence
       const result = await super.handle(context);
 
       // Optionally, you can log the response status code
-    //   console.log(`[${new Date().toISOString()}] Response status code: ${context.response.statusCode}`);
+      //   console.log(`[${new Date().toISOString()}] Response status code: ${context.response.statusCode}`);
 
       return result;
     } catch (err) {
@@ -93,77 +94,104 @@ export class MySequence extends MiddlewareSequence {
       throw err;
     }
   }
-  
+
   async Authentication(context: RequestContext) {
     const request = context.request;
 
-    // Your authentication middleware logic goes here
-    // For example, check for presence of authentication token in headers
     let authToken = request.headers['authentication'];
 
-    if (!authToken) {
-      throw new Error('Authentication Token is missing');
-    }
+    // if (!authToken) {
+    //   // throw new Error('Unauthorized: Authentication token is missing');/
+      
+    // }
+    // if (Array.isArray(authToken)) {
+    //   authToken = authToken[0];
+    // }
+
+    // try {
+    //   // Verify and decode the token
+    //   const decoded = jwt.verify(authToken, secrett);
+
+    //   // Attach the decoded payload to the context object for further use
+    //   context.bind('user').to(decoded);
+    //   console.log('Authentication successful:', decoded);
+
+    // } catch (error) {
+    //   // Handle token verification errors
+    //   throw new Error(`statusCode: 401 Unauthorized: invalid or expired authentication token`)
+    // }
+
     if (Array.isArray(authToken)) {
+      // Assuming you want to use the first element of the array
       authToken = authToken[0];
     }
-
-    try {
-      // Verify and decode the token
-      const decoded = jwt.verify(authToken, secrett);
+    
+    if(authToken){
+      try{
+        const decoded=jwt.verify(authToken,secrett);
+        context.bind('user').to(decoded);
+        console.log('Authentication successful:',decoded)
+      }
+      catch(error){
       
-      // Attach the decoded payload to the context object for further use
-      context.bind('user').to(decoded);
-      console.log('Authentication successful:', decoded);
-      
-    } catch (error) {
-      // Handle token verification errors
-      throw new Error('Invalid or expired token');
+        context.response.status(401)
+        context.response.send({
+          
+          statuscode:401,
+          message:'Unauthorized: Invalid or expired authentication token'
+        })
+      }
     }
-    
-    
+    if(!authToken){
+      context.response.statusCode=401
+      context.response.send({
+        statusode:401,
+        message:'Authentication token is missing'
+      })
+    }
 
-    // Optionally, you can validate the token or perform other authentication checks
-    // For simplicity, let's assume the presence of a token is sufficient for authentication
-    // console.log('Authentication successful');
   }
 
 
 
-  async wrapReq(context:RequestContext){
-    const request_id=uuidv4();
-    context.request.headers['x-sp-request-id']=request_id
-    const timestamp=new Date().toLocaleString();
-    context.request.headers['timestamp']=timestamp;
+  async wrapReq(context: RequestContext) {
+    const request_id = uuidv4();
+    context.request.headers['x-sp-request-id'] = request_id
     
+    const timestamp = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
+    
+    context.request.headers['timestamp'] =timestamp;
+
+
     // const jwt=createAuthToken(payload);
     // context.request.headers['authToken']=jwt
     // const tickerrr=context.request.query["ticker"];
     // context.request.body["ticker"]=tickerrr;
-    
+
 
     console.log(`Meathod "${context.request.method}" URL: "${context.request.url}" headers: "${JSON.stringify(context.request.headers)}"`)
     // console.log(context.response.json)
     // console.log(context.request)
-    
-        // console.log("headers updated:"+JSON.stringify(context.request.headers))
-        // console.log("body: "+JSON.parse(JSON.stringify(context.request.body)))
+
+    // console.log("headers updated:"+JSON.stringify(context.request.headers))
+    // console.log("body: "+JSON.parse(JSON.stringify(context.request.body)))
   }
+
 
 
   // async Authentication(context:RequestContext){
   //   const authheader=context.request.headers['authToken'];
-    
+
 
   // }
-   
-  async  wrapAPIreq(context: RequestContext) {
+
+  async wrapAPIreq(context: RequestContext) {
     console.log("almost there");
     const request = context.request as Request;
 
     if (request.url.startsWith('https://gatewayapi.smallcase.com')) {
-        console.log("Request to third-party API: ",request.headers);
-        // Perform actions specific to requests to the third-party API
+      console.log("Request to third-party API: ", request.headers);
+      // Perform actions specific to requests to the third-party API
     }
-}
+  }
 }

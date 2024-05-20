@@ -2,7 +2,7 @@
 
 import { inject } from '@loopback/core';
 import { Smallcaseapiservice } from '../services';
-import {intercept} from '@loopback/core';
+import { intercept } from '@loopback/core';
 import { HttpErrors, RawBodyParser, Request, ResponseObject, RestBindings, get, param, post, requestBody, response } from '@loopback/rest'
 import { repository } from '@loopback/repository';
 import { RequestInfoRepository } from '../repositories/request-info.repository';
@@ -10,6 +10,7 @@ import { RequestInfo } from '../models';
 // import { JWTservice } from '../services/jwt.service';
 import { authenticate } from '@loopback/authentication';
 import { TransactionapiDataSource } from '../datasources';
+import moment from 'moment'
 
 
 
@@ -19,7 +20,7 @@ export class CallapiController {
     @inject('services.Smallcaseapiservice')
     protected smallcaseService: Smallcaseapiservice,
     // @inject('services.jwt.service') public jwtservice: JWTservice,
-    
+
     @repository(RequestInfoRepository) public requestInfoRepo: RequestInfoRepository
   ) { }
   // @post('genToken')
@@ -27,7 +28,7 @@ export class CallapiController {
   //   // const token=await this.jwtservice.generateToken('Spring@123')
   //   // return token
   // }
- 
+
   @post(`transaction`)
 
 
@@ -39,9 +40,9 @@ export class CallapiController {
           schema: {
             type: 'object',
             properties: {
-              ticker: {type: 'string'},
-              quantity: {type: 'number'},
-              type: {type: 'string'},
+              ticker: { type: 'string' },
+              quantity: { type: 'number' },
+              type: { type: 'string' },
             },
             required: ['ticker', 'quantity', 'type'],
           },
@@ -53,40 +54,61 @@ export class CallapiController {
     // @param.query.string('type') type: string,
     @inject(RestBindings.Http.REQUEST) request: Request,
 
-    
-   
+
+
   ): Promise<object> {
-    
+
     try {
       // console.log("trying ticker is  "+  ticker + " quantity is  "+quantity + "   type is "+type)
       
+      const sm_req_time = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
+      console.log("smallcase_re_time:"+sm_req_time);
+      
       const response = await this.smallcaseService.fetchData();
-      console.log("got data   response is   "+JSON.stringify(response))
-      console.log(response.timestamp)
-      console.log("RequestBody "+JSON.stringify(request.body));
+      const resss_time=moment(new Date()).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
+      console.log(resss_time)
       
-      // console.log("Response body " + JSON.stringify(response));
+      // await this.smallcaseService.requestInterceptor()
+      
 
+
+      // console.log("time added to response")
+      // console.log("timestapm for respone " + response.data["timestamp"])
       
+      const timestamp_res = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
+      response.data["timestamp"] = timestamp_res
+      console.log("RequestBody " + JSON.stringify(request.body));
+
+
+      console.log("Response body " + JSON.stringify(response));
+
+
       // console.log("transactioid:"+response.data["transactionId"])
-      const requestId=String(request.headers["x-sp-request-id"]);
-      const timestamp=String(request.headers["timestamp"]);
-      const transactionId=JSON.stringify(response.data["transactionId"]);
-      const expireAt=response.data["expireAt"];
-      
-      
-      
-      console.log("requestId: "+requestId);
-      console.log("time: "+timestamp);
+      const sml_req_time=sm_req_time;
+      const requestId = String(request.headers["x-sp-request-id"]);
+      const request_time = String(request.headers["timestamp"]);
+      const transactionId = JSON.stringify(response.data["transactionId"]);
+      const request_body = JSON.stringify(request.body)
+      const response_body = JSON.stringify(response)
+      const sml_res_time=resss_time;
+      const response_time = String(response.data["timestamp"])
+
+
+
+      // console.log("requestId: " + requestId);
+      // console.log("time: " + request_time);
+      // console.log(request_body);
+      // console.log(response_body);
+      // console.log(response_time)
       // const body=request.body;
-      const combineData={requestId,timestamp,transactionId,expireAt};
+      const combineData = { requestId, request_time, sml_req_time,transactionId, request_body, response_body,sml_res_time, response_time };
       console.log("done")
-      
-      const newData=new RequestInfo(combineData);
-      
-      const save =await this.requestInfoRepo.create(newData);
+
+      const newData = new RequestInfo(combineData);
+
+      const save = await this.requestInfoRepo.create(newData);
       console.log("data added")
-      
+
 
 
       return {
@@ -100,8 +122,8 @@ export class CallapiController {
       console.error('Error fetching data:', error);
       return {
         statusCode: 500,
-        description: "internal server error",
-        error: 'Internal Server Error',
+        description:'internal server error',
+        error: 'internal server error',
 
       };
     }

@@ -14,19 +14,45 @@ export class RequestInfo extends Entity {
     type: 'string',
     required: true,
   })
-  timestamp: string;
+  request_time: string;
+
+  @property({
+    type:'string',
+    required:true,
+  })
+  sml_req_time:string
 
   @property({
     type: 'string',
-    required: false
+    required: true,
   })
   transactionId: string
 
   @property({
     type: 'string',
-    required: false
+    required: true,
   })
-  expireAt:string
+  request_body:string
+
+  @property({
+    type: 'string',
+    required: true,
+  })
+  response_body:string
+
+  @property({
+    type:'string',
+    required:false
+  })
+  sml_res_time:string
+
+  @property({
+    type:'string',
+    required:true,
+  })
+  response_time: string
+  
+
 
   // Define well-known properties here
 
