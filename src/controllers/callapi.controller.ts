@@ -1,7 +1,7 @@
 // Uncomment these imports to begin using these cool features!
 
 import { inject } from '@loopback/core';
-import { Smallcaseapiservice } from '../services';
+import { OrderDetails, Smallcaseapiservice, TransactionDetails } from '../services';
 import { intercept } from '@loopback/core';
 import { HttpErrors, RawBodyParser, Request, ResponseObject, RestBindings, get, param, post, requestBody, response } from '@loopback/rest'
 import { repository } from '@loopback/repository';
@@ -11,6 +11,7 @@ import { RequestInfo } from '../models';
 import { authenticate } from '@loopback/authentication';
 import { TransactionapiDataSource } from '../datasources';
 import moment from 'moment'
+import { LoggingBindings, WinstonLogger, logInvocation } from '@loopback/logging';
 
 
 
@@ -20,6 +21,12 @@ export class CallapiController {
     @inject('services.Smallcaseapiservice')
     protected smallcaseService: Smallcaseapiservice,
     // @inject('services.jwt.service') public jwtservice: JWTservice,
+    @inject('services.OrderDetails')
+    protected OrderService: OrderDetails,
+    @inject('services.TransactionDetails')
+    protected TransactionService: TransactionDetails,
+    // @inject(LoggingBindings.WINSTON_LOGGER)
+    // private logger: WinstonLogger,
 
     @repository(RequestInfoRepository) public requestInfoRepo: RequestInfoRepository
   ) { }
@@ -28,6 +35,74 @@ export class CallapiController {
   //   // const token=await this.jwtservice.generateToken('Spring@123')
   //   // return token
   // }
+
+
+
+  @post('/webhook')
+  async handleWebhook(
+    @requestBody({
+      description: 'The webhook payload',
+      required: true,
+      content: {
+        'application/json': {
+          schema: { type: 'object' },
+        },
+      },
+    })
+    payload: object,
+  ): Promise<string> {
+    console.log('Webhook received:', payload);
+
+    // You can add your business logic here to handle the webhook event
+
+    return 'Webhook received';
+  }
+
+  @get(`transactionDetails`)
+  // @logInvocation()
+  async getDetails(
+    @param.query.string("transactionId") transactionId: string
+  ): Promise<any> {
+    try {
+      const tDetails = await this.TransactionService.fetchTransactionDetails(transactionId)
+      console.log('transaction details: ' + JSON.stringify(tDetails));
+      return {
+        statusCode: 200,
+        desc: 'success',
+        data: tDetails
+      }
+    }
+    catch (error) {
+      console.log('error:' + error)
+      return {
+        statuscode: 502,
+        desc: 'error'
+      }
+    }
+  }
+
+
+  @get(`OrderDetails`)
+  async myOrderDetails(
+    @param.query.string("transactionId") transationId: string
+  ): Promise<any> {
+    try {
+      const details = await this.OrderService.getOrderDetails(transationId)
+      console.log("orderDetails: " + JSON.stringify(details))
+      return {
+        statusCode: 200,
+        desc: 'success',
+        data: details
+      }
+    }
+
+    catch (error) {
+      console.error('Error fetching data:', error);
+    }
+    return {
+      statusCode: 501
+    }
+  }
 
   @post(`transaction`)
 
@@ -60,21 +135,21 @@ export class CallapiController {
 
     try {
       // console.log("trying ticker is  "+  ticker + " quantity is  "+quantity + "   type is "+type)
-      
+
       const sm_req_time = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
-      console.log("smallcase_re_time:"+sm_req_time);
-      
+      console.log("smallcase_re_time:" + sm_req_time);
+
       const response = await this.smallcaseService.fetchData();
-      const resss_time=moment(new Date()).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
+      const resss_time = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
       console.log(resss_time)
-      
+
       // await this.smallcaseService.requestInterceptor()
-      
+
 
 
       // console.log("time added to response")
       // console.log("timestapm for respone " + response.data["timestamp"])
-      
+
       const timestamp_res = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
       response.data["timestamp"] = timestamp_res
       console.log("RequestBody " + JSON.stringify(request.body));
@@ -84,13 +159,13 @@ export class CallapiController {
 
 
       // console.log("transactioid:"+response.data["transactionId"])
-      const sml_req_time=sm_req_time;
+      const sml_req_time = sm_req_time;
       const requestId = String(request.headers["x-sp-request-id"]);
       const request_time = String(request.headers["timestamp"]);
       const transactionId = JSON.stringify(response.data["transactionId"]);
       const request_body = JSON.stringify(request.body)
       const response_body = JSON.stringify(response)
-      const sml_res_time=resss_time;
+      const sml_res_time = resss_time;
       const response_time = String(response.data["timestamp"])
 
 
@@ -101,7 +176,7 @@ export class CallapiController {
       // console.log(response_body);
       // console.log(response_time)
       // const body=request.body;
-      const combineData = { requestId, request_time, sml_req_time,transactionId, request_body, response_body,sml_res_time, response_time };
+      const combineData = { requestId, request_time, sml_req_time, transactionId, request_body, response_body, sml_res_time, response_time };
       console.log("done")
 
       const newData = new RequestInfo(combineData);
@@ -122,7 +197,7 @@ export class CallapiController {
       console.error('Error fetching data:', error);
       return {
         statusCode: 500,
-        description:'internal server error',
+        description: 'internal server error',
         error: 'internal server error',
 
       };
