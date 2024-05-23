@@ -1,7 +1,12 @@
-import { inject, lifeCycleObserver, LifeCycleObserver } from '@loopback/core';
+import { inject, Interceptor, InvocationContext, lifeCycleObserver, LifeCycleObserver, Next } from '@loopback/core';
 import { juggler } from '@loopback/repository';
 import { v4 as uuidv4 } from 'uuid';
 import jwt from 'jsonwebtoken';
+import { Request, Response, RestBindings } from '@loopback/rest';
+
+
+// Define a class for your interceptor
+
 
 const url = 'https://gatewayapi.smallcase.com/gateway';
 const GatewayName = "plan360degree";
@@ -60,7 +65,7 @@ const config = {
         }
       },
       functions: {
-        fetchData: ["ticker", "quantity", "type"]
+        fetchData: []
       },
       requestInterceptor: (request: any, context: any) => {
         console.log("Inside Request Interceptor");
@@ -72,6 +77,7 @@ const config = {
         console.log("Response:", JSON.stringify(response, null, 2));
         return response;
       },
+      
     },
   ],
 };
