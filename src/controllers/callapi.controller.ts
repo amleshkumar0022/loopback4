@@ -156,7 +156,7 @@ export class CallapiController {
 
   }
 
-  @post(`Createtransaction`)
+  @post(`createTransaciton`)
 
 
   async getData(
