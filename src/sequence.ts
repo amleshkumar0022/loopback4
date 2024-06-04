@@ -1,4 +1,4 @@
-import { MiddlewareSequence, Request, RequestContext, Response } from '@loopback/rest';
+import { MiddlewareSequence, Request, RequestContext, Response, ResponseObject, response } from '@loopback/rest';
 import { time } from 'console';
 import moment from 'moment'
 import { request } from 'http';
@@ -13,6 +13,7 @@ import {
 } from '@loopback/authentication';
 import { inject } from '@loopback/core';
 import { Null } from '@loopback/repository';
+import { resolve } from 'path';
 // import { JWTservice } from './services/jwt.service';
 
 
@@ -61,6 +62,7 @@ console.log("auth_token: " + auth_token);
 export class MySequence extends MiddlewareSequence {
 
   async handle(context: RequestContext) {
+    
     try {
 
 
@@ -80,6 +82,8 @@ export class MySequence extends MiddlewareSequence {
 
 
       await this.wrapAPIreq(context);
+      await this.addIp(context);
+      await this.wrapResponse(context);  
 
       // Call the super method to continue the sequence
       const result = await super.handle(context);
@@ -175,6 +179,21 @@ export class MySequence extends MiddlewareSequence {
 
     // console.log("headers updated:"+JSON.stringify(context.request.headers))
     // console.log("body: "+JSON.parse(JSON.stringify(context.request.body)))
+  }
+
+  async addIp(context:RequestContext){
+    const IP_adress=context.request.ip
+    console.log("ip address: "+IP_adress)
+    context.request.headers['IP_adress']=IP_adress;
+  }
+
+  async wrapResponse(context:RequestContext){
+    context.response.setHeader('responseId',(String(uuidv4())))
+    console.log("header is added"+context.response.getHeader("responseId"))
+    console.log(context.response.statusCode)
+    // console.log(JSON.stringify(context.response))
+    console.log("header object "+JSON.stringify(context.response.getHeaders()))
+    console.log(context.response.statusCode)
   }
 
 

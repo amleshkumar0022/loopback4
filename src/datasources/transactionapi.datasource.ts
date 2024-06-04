@@ -3,6 +3,7 @@ import { juggler } from '@loopback/repository';
 import { v4 as uuidv4 } from 'uuid';
 import jwt from 'jsonwebtoken';
 import { Request, Response, RestBindings } from '@loopback/rest';
+import { request } from 'http';
 
 
 // Define a class for your interceptor
@@ -30,7 +31,7 @@ function createAuthToken(id: any) {
 }
 const jwwt = createAuthToken(null);
 console.log("JWT:", jwwt);
-console.log("API Secret:", API_secret);
+console.log("API Secret:", API_secret); 
 
 const config = {
   name: 'transactionapi',
@@ -65,13 +66,14 @@ const config = {
         }
       },
       functions: {
-        fetchData: []
+        fetchData: [],
+        requestInterceptor: (request: any, context: any) => {
+          console.log("Inside Request Interceptor");
+          console.log("Request:", JSON.stringify(request, null, 2));
+          return request;
+        },
       },
-      requestInterceptor: (request: any, context: any) => {
-        console.log("Inside Request Interceptor");
-        console.log("Request:", JSON.stringify(request, null, 2));
-        return request;
-      },
+      
       responseInterceptor: (response: any, context: any) => {
         console.log("Inside Response Interceptor");
         console.log("Response:", JSON.stringify(response, null, 2));

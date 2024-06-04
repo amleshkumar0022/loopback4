@@ -4,18 +4,20 @@ import { inject } from '@loopback/core';
 import { OrderDetails, Smallcaseapiservice, TransactionDetails } from '../services';
 import { intercept } from '@loopback/core';
 import { HttpErrors, RawBodyParser, Request, ResponseObject, RestBindings, get, param, post, requestBody, response } from '@loopback/rest'
-import { repository } from '@loopback/repository';
+import { Null, repository } from '@loopback/repository';
 import { RequestInfoRepository } from '../repositories/request-info.repository';
-import { RequestInfo } from '../models';
+import { IncomingReqRes, RequestInfo } from '../models';
 // import { JWTservice } from '../services/jwt.service';
 import { authenticate } from '@loopback/authentication';
 import { TransactionapiDataSource } from '../datasources';
 import moment from 'moment'
 import { LoggingBindings, WinstonLogger, logInvocation } from '@loopback/logging';
+import { IncomingReqResRepository } from '../repositories';
 
 
 
 export class CallapiController {
+  [x: string]: any;
   constructor(
 
     @inject('services.Smallcaseapiservice')
@@ -28,7 +30,8 @@ export class CallapiController {
     // @inject(LoggingBindings.WINSTON_LOGGER)
     // private logger: WinstonLogger,
 
-    @repository(RequestInfoRepository) public requestInfoRepo: RequestInfoRepository
+    @repository(RequestInfoRepository) public requestInfoRepo: RequestInfoRepository,
+    @repository(IncomingReqResRepository) public incomingReqresRepo:IncomingReqResRepository
   ) { }
   // @post('genToken')
   // async credential(){
@@ -104,7 +107,56 @@ export class CallapiController {
     }
   }
 
-  @post(`transaction`)
+  @post('Createtransactions')
+  async bulkTrnsaction(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: {
+            type: 'array',
+            items: {
+              type: 'object',
+              properties: {
+                ticker: {type: 'string'},
+                quantity: {type: 'number'},
+                type: {type: 'string'},
+              },
+              required: ['ticker', 'quantity', 'type'],
+            },
+          },
+        },
+      },
+    })
+    securities: Array<{ticker: string; quantity: number; type: string}>
+  ):Promise<any>{
+    if(securities.length<2){
+      return{
+        statuscode:401,
+        message:'Bad request : more than one security transaction required'
+
+      }
+      
+    }
+    try{
+      const ans=await this.smallcaseService.fetchData();
+      return{
+        statuscode:200,
+        message:'success',
+        data:ans
+      }
+    
+    }
+    catch(error){
+      console.log("error in this"+ error)
+      return{
+        statuscode:505,
+        message:'bakchodi'
+      }
+    }
+
+  }
+
+  @post(`Createtransaction`)
 
 
   async getData(
@@ -115,6 +167,7 @@ export class CallapiController {
           schema: {
             type: 'object',
             properties: {
+              
               ticker: { type: 'string' },
               quantity: { type: 'number' },
               type: { type: 'string' },
@@ -142,6 +195,7 @@ export class CallapiController {
       const response = await this.smallcaseService.fetchData();
       const resss_time = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
       console.log(resss_time)
+      console.log("aaabbacc"+JSON.stringify(this.smallcaseService.requestInterceptor()));
 
       // await this.smallcaseService.requestInterceptor()
 
@@ -153,6 +207,8 @@ export class CallapiController {
       const timestamp_res = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
       response.data["timestamp"] = timestamp_res
       console.log("RequestBody " + JSON.stringify(request.body));
+      console.log("full structure "+JSON.stringify(response.data))
+      console.log("statuscode"+response['errors']);
 
 
       console.log("Response body " + JSON.stringify(response));
@@ -160,13 +216,30 @@ export class CallapiController {
 
       // console.log("transactioid:"+response.data["transactionId"])
       const sml_req_time = sm_req_time;
-      const requestId = String(request.headers["x-sp-request-id"]);
-      const request_time = String(request.headers["timestamp"]);
+      const x_sp_req_id = String(request.headers["x-sp-request-id"]);
+      const req_http_method = String(request.method);
+      // const req_timestamp=request.headers["timestamp"]
+      const req_url=request.url
+      const req_api_name="Initiate Transaction"
+      const req_source_partner="Safehands Fintech"
+      const req_source_IP=request.ip
+      console.log(request.ip)
+      const req_headers=JSON.stringify(request.headers)
+      const req_body=request.body
+      const resonse_id="asad1232"
       const transactionId = JSON.stringify(response.data["transactionId"]);
-      const request_body = JSON.stringify(request.body)
-      const response_body = JSON.stringify(response)
-      const sml_res_time = resss_time;
-      const response_time = String(response.data["timestamp"])
+      const res_headers= {"headers":"ss"}//set and fetch res_headers
+      const res_body=JSON.stringify(response.data)
+      const res_http_statuscode=String(response.statuscode)
+      const res_timestamp = String(response.data["timestamp"])
+      const res_status_text="sucess"
+      const res_error_stacktrace="stacktrace"
+      
+      
+      
+      // const response_headers=String(response.headers)
+      console.log("response headers"+ response.getHeader)
+      console.log("response_statuscode"+response.status)
 
 
 
@@ -176,13 +249,14 @@ export class CallapiController {
       // console.log(response_body);
       // console.log(response_time)
       // const body=request.body;
-      const combineData = { requestId, request_time, sml_req_time, transactionId, request_body, response_body, sml_res_time, response_time };
+      const combineData = {x_sp_req_id ,req_http_method  , req_url, req_api_name, req_source_partner, req_source_IP, req_headers,req_body,resonse_id,transactionId,res_headers,res_body,res_http_statuscode,res_timestamp,res_status_text,res_error_stacktrace };
       console.log("done")
 
-      const newData = new RequestInfo(combineData);
-
-      const save = await this.requestInfoRepo.create(newData);
+      const newData = new IncomingReqRes(combineData);
+          
+      const save = await this.incomingReqresRepo.create(newData);
       console.log("data added")
+      
 
 
 

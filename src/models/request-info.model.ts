@@ -15,6 +15,7 @@ export class RequestInfo extends Entity {
     required: true,
   })
   request_time: string;
+  
 
   @property({
     type:'string',
@@ -68,6 +69,6 @@ constructor(data?: Partial<RequestInfo>) {
 export interface RequestInfoRelations {
   // describe navigational properties here
   
-}
+} 
 
 export type RequestInfoWithRelations = RequestInfo & RequestInfoRelations;

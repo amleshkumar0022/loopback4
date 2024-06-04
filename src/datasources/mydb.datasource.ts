@@ -9,7 +9,7 @@ const config = {
   port: 5432,
   user: 'postgres',
   password: 'Ravinder@123',
-  database: 'demo'
+  database: 'sapigate'
 };
 
 // Observe application's life cycle to disconnect the datasource when
