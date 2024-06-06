@@ -252,12 +252,12 @@ export class CallapiController {
       // console.log(response_body);
       // console.log(response_time)
       // const body=request.body;
-      const combineData = {x_sp_req_id ,req_http_method , req_url, req_api_name, req_source_partner, req_source_IP, req_headers,req_body,resonse_id,transactionId,res_headers,res_body,res_http_statuscode,res_timestamp,res_status_text,res_error_stacktrace };
-      console.log("done")
+      // const combineData = {x_sp_req_id ,req_http_method , req_url, req_api_name, req_source_partner, req_source_IP, req_headers,req_body,resonse_id,transactionId,res_headers,res_body,res_http_statuscode,res_timestamp,res_status_text,res_error_stacktrace };
+      // console.log("done")
 
-      const newData = new IncomingReqRes(combineData);
+      // const newData = new IncomingReqRes(combineData);
           
-      const save = await this.incomingReqresRepo.create(newData);
+      // const save = await this.incomingReqresRepo.create(newData);
       console.log("data added")
       
 
