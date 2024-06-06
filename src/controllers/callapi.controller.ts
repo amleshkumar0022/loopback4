@@ -218,8 +218,11 @@ export class CallapiController {
       const sml_req_time = sm_req_time;
       const x_sp_req_id = String(request.headers["x-sp-request-id"]);
       const req_http_method = String(request.method);
-      // const req_timestamp=request.headers["timestamp"]
+      const req_timestamp=request.headers["timestamp"]
+      // const req_timestamp=new Date(req_timestampp)
+      
       const req_url=request.url
+      console.log("url: "+req_url)
       const req_api_name="Initiate Transaction"
       const req_source_partner="Safehands Fintech"
       const req_source_IP=request.ip
@@ -229,9 +232,9 @@ export class CallapiController {
       const resonse_id="asad1232"
       const transactionId = JSON.stringify(response.data["transactionId"]);
       const res_headers= {"headers":"ss"}//set and fetch res_headers
-      const res_body=JSON.stringify(response.data)
+      const res_body=response.data
       const res_http_statuscode=String(response.statuscode)
-      const res_timestamp = String(response.data["timestamp"])
+      const res_timestamp = response.data["timestamp"]
       const res_status_text="sucess"
       const res_error_stacktrace="stacktrace"
       
@@ -249,7 +252,7 @@ export class CallapiController {
       // console.log(response_body);
       // console.log(response_time)
       // const body=request.body;
-      const combineData = {x_sp_req_id ,req_http_method  , req_url, req_api_name, req_source_partner, req_source_IP, req_headers,req_body,resonse_id,transactionId,res_headers,res_body,res_http_statuscode,res_timestamp,res_status_text,res_error_stacktrace };
+      const combineData = {x_sp_req_id ,req_http_method , req_url, req_api_name, req_source_partner, req_source_IP, req_headers,req_body,resonse_id,transactionId,res_headers,res_body,res_http_statuscode,res_timestamp,res_status_text,res_error_stacktrace };
       console.log("done")
 
       const newData = new IncomingReqRes(combineData);

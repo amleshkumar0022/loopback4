@@ -1,4 +1,5 @@
 import {Entity, model, property} from '@loopback/repository';
+import { UUID } from 'crypto';
 
 @model()
 export class IncomingReqRes extends Entity {
@@ -8,7 +9,20 @@ export class IncomingReqRes extends Entity {
     generated: false,
     required: false,
   })
-  x_sp_req_id: string;
+  x_sp_req_id: String;
+
+  @property({
+    type: 'string',
+    required: false,
+
+  })
+  source_customer_name: string
+
+  @property({
+    type: 'number',
+    required: false,
+  })
+  source_customer_id: number
 
   @property({
     type: 'string',
@@ -16,11 +30,11 @@ export class IncomingReqRes extends Entity {
   })
   req_http_method: string;
 
-  @property({
-    type: 'string',
-    required: false,
-  })
-  req_timestamp: string;
+  // @property({
+  //   type: 'string',
+  //   required: false,
+  // })
+  // req_timestamp: String;
 
   @property({
     type: 'string',
@@ -47,16 +61,16 @@ export class IncomingReqRes extends Entity {
   req_source_IP: string;
 
   @property({
-    type: 'string',
+    type: 'object',
     required: false,
   })
-  req_headers: string;
+  req_headers: Object;
 
   @property({
-    type: 'string',
+    type: 'object',
     required: false,
   })
-  req_body: string;
+  req_body: Object;
 
   @property({
     type: 'string',
@@ -65,11 +79,11 @@ export class IncomingReqRes extends Entity {
   resonse_id: string;
 
   @property({
-    type:'string',
-    required:false
+    type: 'string',
+    required: false
   })
-  transactionId:string;
-  
+  transactionId: string;
+
   @property({
     type: 'object',
     required: false
@@ -77,10 +91,10 @@ export class IncomingReqRes extends Entity {
   res_headers?: object;
 
   @property({
-    type: 'string',
+    type: 'object',
     required: false,
   })
-  res_body: string;
+  res_body: object;
 
   @property({
     type: 'string',
@@ -89,10 +103,10 @@ export class IncomingReqRes extends Entity {
   res_http_statuscode: string;
 
   @property({
-    type: 'string',
+    type: 'date',
     required: false,
   })
-  res_timestamp: string;
+  res_timestamp: Date;
 
   @property({
     type: 'string',
@@ -101,7 +115,7 @@ export class IncomingReqRes extends Entity {
   res_status_text: string;
 
   @property({
-    type: 'string', 
+    type: 'string',
     required: false,
   })
   res_error_stacktrace: string;

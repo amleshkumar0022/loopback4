@@ -162,7 +162,7 @@ export class MySequence extends MiddlewareSequence {
     const request_id = uuidv4();
     context.request.headers['x-sp-request-id'] = request_id
     
-    const timestamp = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
+    const timestamp  = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
     
     context.request.headers['timestamp'] =timestamp;
 
