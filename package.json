@@ -9,8 +9,7 @@
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "engines": {
-    "node": "20.x.x",
-    "npm": ">=6.0.0 <=9.6.7"
+    "node": "16.4.0"
   },
   "scripts": {
     "build": "lb-tsc",
