@@ -17,7 +17,7 @@ const API_secret = "plan360degree_fdc1222d6a90457287aa43cfa9c0c03a";
 const authId = uuidv4();
 console.log("Auth ID:", authId);
 
-function createAuthToken(id: any) {
+export function createAuthToken(id: any) {
   const secret = secrett;
   const expiresIn = "1d";
   if (id) {
@@ -88,6 +88,7 @@ const config = {
 export class TransactionapiDataSource extends juggler.DataSource implements LifeCycleObserver {
   static dataSourceName = 'transactionapi';
   static readonly defaultConfig = config;
+  
 
   constructor(
     @inject('datasources.config.transactionapi', { optional: true })

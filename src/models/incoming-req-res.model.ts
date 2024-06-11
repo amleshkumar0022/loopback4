@@ -30,11 +30,11 @@ export class IncomingReqRes extends Entity {
   })
   req_http_method: string;
 
-  // @property({
-  //   type: 'string',
-  //   required: false,
-  // })
-  // req_timestamp: String;
+  @property({
+    type: 'date',
+    required: false,
+  })
+  req_timestamp: Date;
 
   @property({
     type: 'string',
