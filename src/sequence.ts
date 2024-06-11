@@ -67,7 +67,7 @@ export class MySequence extends MiddlewareSequence {
 
 
       // Check if the request path matches the route that requires authentication
-      if (context.request.path === '/transaction') {
+      if (context.request.path === '/InitiateTransactionp') {
         // Call the authentication middleware only for the protected route
         await this.Authentication(context);
       }
@@ -162,7 +162,7 @@ export class MySequence extends MiddlewareSequence {
     const request_id = uuidv4();
     context.request.headers['x-sp-request-id'] = request_id
     
-    const timestamp  = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
+    const timestamp:any  = moment(new Date()).format('YYYY-MM-DDTHH:mm:ss.SSS[Z]')
     
     context.request.headers['timestamp'] =timestamp;
 

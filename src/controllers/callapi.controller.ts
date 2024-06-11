@@ -3,10 +3,14 @@
 import { inject } from '@loopback/core';
 import { OrderDetails, Smallcaseapiservice, TransactionDetails } from '../services';
 import { intercept } from '@loopback/core';
+import jwt from "jsonwebtoken"
 import { HttpErrors, RawBodyParser, Request, ResponseObject, RestBindings, get, param, post, requestBody, response } from '@loopback/rest'
 import { Null, repository } from '@loopback/repository';
 import { RequestInfoRepository } from '../repositories/request-info.repository';
 import { IncomingReqRes, RequestInfo } from '../models';
+import { createAuthToken } from '../datasources/';
+// import { tranasp } from '../datasources';
+
 // import { JWTservice } from '../services/jwt.service';
 import { authenticate } from '@loopback/authentication';
 import { TransactionapiDataSource } from '../datasources';
@@ -27,6 +31,7 @@ export class CallapiController {
     protected OrderService: OrderDetails,
     @inject('services.TransactionDetails')
     protected TransactionService: TransactionDetails,
+  
     // @inject(LoggingBindings.WINSTON_LOGGER)
     // private logger: WinstonLogger,
 
@@ -117,6 +122,8 @@ export class CallapiController {
             items: {
               type: 'object',
               properties: {
+                investor: {type:'string'},
+                investorId:{type:'number'},
                 ticker: {type: 'string'},
                 quantity: {type: 'number'},
                 type: {type: 'string'},
@@ -156,11 +163,8 @@ export class CallapiController {
 
   }
 
-  @post(`createTransaciton`)
-
-
-  async getData(
-
+  @get('Authtoken')
+  async genJwtToken(
     @requestBody({
       content: {
         'application/json': {
@@ -168,15 +172,75 @@ export class CallapiController {
             type: 'object',
             properties: {
               
-              ticker: { type: 'string' },
-              quantity: { type: 'number' },
-              type: { type: 'string' },
+              authId: { type: 'string' },
+              
             },
-            required: ['ticker', 'quantity', 'type'],
+            required: ['authId'],
           },
         },
       },
     })
+    @inject(RestBindings.Http.REQUEST) request: Request,
+
+
+  ): Promise<any>{
+    const authid=request.body.authId;
+    console.log("reached")
+    
+      const secret = "plan360degree_b769953d42804f03874ad9339a4a496f";
+      const expiresIn = "1d";
+      console.log("initiating function")
+      if (authid) {
+        return jwt.sign({
+          smallcaseAuthId: authid,
+        }, secret, { expiresIn });
+        
+      }
+      return jwt.sign({
+        guest: true,
+      }, secret, { expiresIn });
+    
+    
+}
+
+
+
+  @post(`InitiateTransaction`)
+
+
+  async getData(
+    @requestBody({
+      content: {
+        'application/json': {
+          schema: {
+            type: 'object',
+            properties: {
+              investor_name: {type: 'string'},
+              investor_id: {type: 'number'},
+              securities: {
+                type: 'array',
+                items: {
+                  type: 'object',
+                  properties: {
+                    ticker: {type: 'string'},
+                    quantity: {type: 'number'},
+                    type: {type: 'string'},
+                  },
+                  required: ['ticker', 'quantity', 'type'],
+                },
+              },
+            },
+            required: ['investor_name', 'investor_id', 'securities'],
+          },
+        },
+      },
+    })
+    securities: {
+      investor_name: string;
+      investor_id: number;
+      securities: Array<{ticker: string; quantity: number; type: string}>;
+    },
+
     // @param.query.string('ticker') ticker: string,
     // @param.query.string('quantity') quantity: number,
     // @param.query.string('type') type: string,
@@ -218,9 +282,8 @@ export class CallapiController {
       const sml_req_time = sm_req_time;
       const x_sp_req_id = String(request.headers["x-sp-request-id"]);
       const req_http_method = String(request.method);
-      const req_timestamp=request.headers["timestamp"]
-      // const req_timestamp=new Date(req_timestampp)
-      
+      const req_timestamp:any =String(request.headers["timestamp"])
+      // const req_timestamp=new Date(req_timestampp)    
       const req_url=request.url
       console.log("url: "+req_url)
       const req_api_name="Initiate Transaction"
@@ -252,10 +315,10 @@ export class CallapiController {
       // console.log(response_body);
       // console.log(response_time)
       // const body=request.body;
-      // const combineData = {x_sp_req_id ,req_http_method , req_url, req_api_name, req_source_partner, req_source_IP, req_headers,req_body,resonse_id,transactionId,res_headers,res_body,res_http_statuscode,res_timestamp,res_status_text,res_error_stacktrace };
-      // console.log("done")
+      const combineData = {x_sp_req_id ,req_http_method ,req_timestamp, req_url, req_api_name, req_source_partner, req_source_IP, req_headers,req_body,resonse_id,transactionId,res_headers,res_body,res_http_statuscode,res_timestamp,res_status_text,res_error_stacktrace };
+      console.log("done")
 
-      // const newData = new IncomingReqRes(combineData);
+      const newData = new IncomingReqRes(combineData);
           
       // const save = await this.incomingReqresRepo.create(newData);
       console.log("data added")
