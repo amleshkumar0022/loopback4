@@ -61,7 +61,7 @@ export class CallapiController {
     return 'Webhook received';
   }
 
-  @get(`transactionDetails`)
+  @get(`/transactionDetails`)
   // @logInvocation()
   async getDetails(
     @param.query.string("transactionId") transactionId: string
