@@ -10,7 +10,8 @@ export interface Smallcaseapiservice {
   // this is where you define the Node.js methods that will be
   // mapped to REST/SOAP/gRPC operations as stated in the datasource
   // json file.
-  fetchData():Promise<any>;
+  fetchData():Promise<{ headers: any; data: any ; statusCode: number}>;
+
 }
 console.log("function executed")
 

@@ -22,8 +22,8 @@ export class SmallcaseApplication extends BootMixin(
 ) {
   constructor(options: ApplicationConfig = {}) {
     super(options);
-    
-    
+
+
     // this.bind('services.jwt.service').toClass(JWTservice);
     // Set up the custom sequence
     // this.bind('services.OrderDetails').toProvider(OrderDetailsProvider);
@@ -47,7 +47,7 @@ export class SmallcaseApplication extends BootMixin(
       controllers: {
         // Customize ControllerBooter Conventions here
         dirs: ['controllers'],
-        extensions: ['.controller.js'],
+        extensions: ['.controller.js','.controller.ts'],
         nested: true,
       },
     };

@@ -5,7 +5,7 @@ import jwt from 'jsonwebtoken';
 import { Request, Response, RestBindings } from '@loopback/rest';
 import { request } from 'http';
 
-
+import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 // Define a class for your interceptor
 
 
@@ -31,7 +31,7 @@ export function createAuthToken(id: any) {
 }
 const jwwt = createAuthToken(null);
 console.log("JWT:", jwwt);
-console.log("API Secret:", API_secret); 
+console.log("API Secret:", API_secret);
 
 const config = {
   name: 'transactionapi',
@@ -52,18 +52,21 @@ const config = {
         method: 'POST',
         url: `https://gatewayapi.smallcase.com/gateway/${GatewayName}/transaction`,
         body: {
-          "intent": "TRANSACTION",
-          "orderConfig": {
-            "type": "SECURITIES",
-            "securities": [
-              {
-                "ticker": "{ticker}",
-                "quantity": "{quantity}",
-                "type": "{type}"
-              }
-            ]
-          }
-        }
+
+            "intent": "TRANSACTION",
+            "orderConfig": {
+              "type": "SECURITIES",
+              "securities": [
+                {
+                  "ticker": "{ticker}",
+                  "quantity": "{quantity}",
+                  "type": "{type}"
+                }
+              ]
+            }
+
+        },
+
       },
       functions: {
         fetchData: [],
@@ -72,14 +75,28 @@ const config = {
           console.log("Request:", JSON.stringify(request, null, 2));
           return request;
         },
+        responseInterceptor: (response: any, context: any) => {
+          console.log("Inside Response Interceptor");
+          console.log("Response:", JSON.stringify(response, null, 2));
+          return {
+            headers: response.headers,
+            data: response.body,
+            statusCode: response.status,
+          };
+        },
+
       },
-      
-      responseInterceptor: (response: any, context: any) => {
-        console.log("Inside Response Interceptor");
-        console.log("Response:", JSON.stringify(response, null, 2));
-        return response;
-      },
-      
+
+      // responseInterceptor: (response: any, context: any) => {
+      //   console.log("Inside Response Interceptor");
+      //   console.log("Response:", JSON.stringify(response, null, 2));
+      //   return {
+      //     headers: "application/json",
+      //     data: response.body,
+      //     statusCode: response.status,
+      //   };
+      // },
+
     },
   ],
 };
@@ -88,7 +105,7 @@ const config = {
 export class TransactionapiDataSource extends juggler.DataSource implements LifeCycleObserver {
   static dataSourceName = 'transactionapi';
   static readonly defaultConfig = config;
-  
+
 
   constructor(
     @inject('datasources.config.transactionapi', { optional: true })

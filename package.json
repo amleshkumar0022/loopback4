@@ -60,6 +60,7 @@
     "@loopback/rest-explorer": "^7.0.1",
     "@loopback/service-proxy": "^7.0.1",
     "@types/minimatch": "^5.1.2",
+    "axios": "^1.7.2",
     "crypto": "^1.0.1",
     "debug": "^4.3.4",
     "json": "^11.0.0",
@@ -85,7 +86,6 @@
     "@types/uuid": "^9.0.8",
     "eslint": "^8.57.0",
     "source-map-support": "^0.5.21",
-    
     "typescript": "~5.2.2"
   }
 }
